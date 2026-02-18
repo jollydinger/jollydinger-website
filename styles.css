@@ -431,6 +431,11 @@ header {
   background: #ef4444;
 }
 
+.ws-dot--polling {
+  background: var(--accent-amber);
+  animation: pulse-ring-amber 3s ease-in-out infinite;
+}
+
 .ws-label {
   font-family: var(--font-display);
   font-size: 0.6rem;
@@ -442,6 +447,7 @@ header {
 
 .ws-label--connecting { color: var(--accent-amber); }
 .ws-label--live       { color: var(--accent-green); }
+.ws-label--polling    { color: var(--accent-amber); }
 .ws-label--error      { color: #ef4444; }
 
 .live-updated {
