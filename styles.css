@@ -664,6 +664,82 @@ footer {
 .footer-copy {
   font-size: 0.75rem;
   color: var(--text-muted);
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.footer-divider--faint {
+  opacity: 0.4;
+  margin: 2rem 0 1.75rem;
+}
+
+/* ── Post Fiat branding block ────────────────────────── */
+
+.footer-pf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pf-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.pf-brand:hover {
+  color: var(--accent-green);
+}
+
+.pf-hex {
+  font-size: 1.3rem;
+  color: var(--accent-green);
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(0,229,160,0.5));
+}
+
+.pf-text {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.pf-text strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pf-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.pf-link {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.pf-link:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.05);
+}
+
+@media (max-width: 640px) {
+  .footer-pf {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────── */
