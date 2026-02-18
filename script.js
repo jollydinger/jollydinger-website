@@ -1,8 +1,7 @@
 // ── Config ────────────────────────────────────────────────────────────────────
-const DATA_URL      = '/data/validator.json';
-const REFRESH_MS    = 15 * 60 * 1000;   // re-fetch every 15 min (matches Action)
-const STALE_WARN_MS = 20 * 60 * 1000;   // amber if data older than 20 min
-const STALE_ERR_MS  = 60 * 60 * 1000;   // red if older than 60 min
+const VALIDATOR_KEY = 'nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM';
+const VHS_URL       = `https://vhs.testnet.postfiat.org/v1/network/validator/${VALIDATOR_KEY}`;
+const REFRESH_MS    = 60 * 1000;   // refresh every 60 seconds
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const elDot        = document.getElementById('wsDot');
@@ -17,10 +16,10 @@ const elLastVal    = document.getElementById('lastValidated');
 // ── Fetch & render ────────────────────────────────────────────────────────────
 async function fetchStats() {
   try {
-    // Cache-bust so GitHub Pages doesn't serve stale file
-    const res  = await fetch(DATA_URL + '?t=' + Date.now());
+    const res = await fetch(VHS_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
+    if (data.result !== 'success') throw new Error('result: ' + data.result);
     render(data);
   } catch {
     setStatus('error');
@@ -28,55 +27,32 @@ async function fetchStats() {
 }
 
 function render(data) {
-  const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
-  const ageMs     = updatedAt ? Date.now() - updatedAt.getTime() : Infinity;
+  setStatus('live');
 
-  // ── Badge status based on data freshness ──
-  if (ageMs < STALE_WARN_MS) {
-    setStatus('live');
-  } else if (ageMs < STALE_ERR_MS) {
-    setStatus('polling');   // amber = stale but not dead
-  } else {
-    setStatus('error');
-  }
+  const a1h   = data.agreement_1h  || {};
+  const score = parseFloat(a1h.score || 0);
 
-  // ── Uptime / agreement ──
-  if (data.validator_found && data.score !== '') {
-    const score = parseFloat(data.score);
+  elUptime.textContent     = (score * 100).toFixed(2) + '%';
+  elAgreements.textContent = formatNum((a1h.total || 0) - (a1h.missed || 0));
+  elMissed.textContent     = formatNum(a1h.missed || 0);
+  elLedger.textContent     = data.current_index ? formatNum(data.current_index) : '—';
 
-    elUptime.textContent     = (score * 100).toFixed(1) + '%';
-    elAgreements.textContent = formatNum(data.total - data.missed);
-    elMissed.textContent     = formatNum(data.missed);
-    elUptime.className       = 'live-val ' +
-      (score >= 0.95 ? 'live-val--green' : score < 0.80 ? 'live-val--red' : '');
-  } else {
-    elUptime.textContent     = 'N/A';
-    elAgreements.textContent = 'N/A';
-    elMissed.textContent     = 'N/A';
-  }
+  elUptime.className = 'live-val ' +
+    (score >= 0.95 ? 'live-val--green' : score < 0.80 ? 'live-val--red' : '');
 
-  // Ledger is not in the static file — keep showing — if we ever add it
-  // elLedger stays at — until a future enhancement
+  // ── "Updated X min ago" ticker ──
+  const fetchedAt = Date.now();
+  elUpdated.textContent = 'Updated just now';
+  clearInterval(window._updateTick);
+  window._updateTick = setInterval(() => {
+    const m = Math.round((Date.now() - fetchedAt) / 60000);
+    elUpdated.textContent = m < 1 ? 'Updated just now' : `Updated ${m}m ago`;
+  }, 60000);
 
-  // ── "Updated X min ago" ──
-  if (updatedAt) {
-    const mins = Math.round(ageMs / 60000);
-    elUpdated.textContent = mins < 1
-      ? 'Updated just now'
-      : `Updated ${mins}m ago`;
-
-    // Tick the relative timestamp every minute
-    clearInterval(window._updateTick);
-    window._updateTick = setInterval(() => {
-      const m = Math.round((Date.now() - updatedAt.getTime()) / 60000);
-      elUpdated.textContent = m < 1 ? 'Updated just now' : `Updated ${m}m ago`;
-    }, 60000);
-  }
-
-  // ── Network state in the last-validated row ──
-  if (data.network_state && data.network_state !== 'unknown') {
-    elLastVal.textContent = `⬡ Network: ${data.network_state}`;
-  }
+  // ── Footer info row ──
+  const a24h = data.agreement_24h || {};
+  const score24 = a24h.score ? (parseFloat(a24h.score) * 100).toFixed(2) + '%' : '—';
+  elLastVal.textContent = `⬡ Chain: ${data.chain || 'test'}  ·  24h score: ${score24}  ·  v${data.server_version || '—'}`;
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -85,9 +61,8 @@ function setStatus(state) {
   elLabel.className = 'ws-label';
 
   const map = {
-    live:    { dot: 'ws-dot--live',        label: 'ws-label--live',        text: 'LIVE'    },
-    polling: { dot: 'ws-dot--polling',     label: 'ws-label--polling',     text: 'STALE'   },
-    error:   { dot: 'ws-dot--error',        label: 'ws-label--error',        text: 'ERROR'   },
+    live:  { dot: 'ws-dot--live',  label: 'ws-label--live',  text: 'LIVE'  },
+    error: { dot: 'ws-dot--error', label: 'ws-label--error', text: 'ERROR' },
   };
 
   const s = map[state] || map.error;
