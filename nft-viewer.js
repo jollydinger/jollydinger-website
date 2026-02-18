@@ -139,10 +139,12 @@ function createNFTCard(nft) {
   const meta = document.createElement('div');
   meta.className = 'nft-meta';
 
-  // ID row
+  // Name or ID row
   const idRow = document.createElement('div');
   idRow.className = 'nft-meta-row';
-  idRow.innerHTML = `<span class="nft-meta-label">ID</span><span class="nft-meta-value nft-meta-mono" title="${nft.id}">${shortId}</span>`;
+  const displayName = nft.name ? nft.name : shortId;
+  const displayTitle = nft.name ? `${nft.name}\n${nft.id}` : nft.id;
+  idRow.innerHTML = `<span class="nft-meta-label">${nft.name ? 'Name' : 'ID'}</span><span class="nft-meta-value nft-meta-mono" title="${displayTitle}">${displayName}</span>`;
   meta.appendChild(idRow);
 
   // Issuer row
