@@ -18,18 +18,28 @@ jobs:
         run: |
           mkdir -p data
 
-          curl -sf --max-time 15 -X POST https://rpc.testnet.postfiat.org/ \
+          echo "--- Fetching validators ---"
+          HTTP_CODE=$(curl -s --max-time 15 -w "%{http_code}" \
+            -X POST https://rpc.testnet.postfiat.org/ \
             -H "Content-Type: application/json" \
             -d '{"method":"validators","params":[{}]}' \
-            -o /tmp/validators.json
+            -o /tmp/validators.json)
+          echo "validators HTTP status: $HTTP_CODE"
+          echo "validators response:"
+          cat /tmp/validators.json || echo "(no file)"
 
-          curl -sf --max-time 15 -X POST https://rpc.testnet.postfiat.org/ \
+          echo "--- Fetching server_info ---"
+          HTTP_CODE=$(curl -s --max-time 15 -w "%{http_code}" \
+            -X POST https://rpc.testnet.postfiat.org/ \
             -H "Content-Type: application/json" \
             -d '{"method":"server_info","params":[{}]}' \
-            -o /tmp/server_info.json
+            -o /tmp/server_info.json)
+          echo "server_info HTTP status: $HTTP_CODE"
+          echo "server_info response:"
+          cat /tmp/server_info.json || echo "(no file)"
 
           python3 << 'EOF'
-          import json, datetime, sys
+          import json, datetime, sys, os
 
           VALIDATOR_KEY = 'nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM'
 
@@ -45,18 +55,19 @@ jobs:
                   None
               )
 
-              agreement = v.get('agreement', {}) if v else {}
+              agreement   = v.get('agreement', {}) if v else {}
               server_info = sdata.get('result', {}).get('info', {})
 
               output = {
-                  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'updated_at':      datetime.datetime.utcnow().isoformat() + 'Z',
                   'validator_found': v is not None,
-                  'score':   str(agreement.get('score', '')),
-                  'total':   agreement.get('total', 0),
-                  'missed':  agreement.get('missed', 0),
-                  'network_state': server_info.get('server_state', 'unknown'),
+                  'score':           str(agreement.get('score', '')),
+                  'total':           agreement.get('total', 0),
+                  'missed':          agreement.get('missed', 0),
+                  'network_state':   server_info.get('server_state', 'unknown'),
               }
 
+              os.makedirs('data', exist_ok=True)
               with open('data/validator.json', 'w') as f:
                   json.dump(output, f, indent=2)
 
@@ -73,7 +84,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git add data/validator.json
 
-          # Only commit when meaningful fields change (not just updated_at)
           CHANGED=$(git diff --staged -- data/validator.json \
             | grep '^[+-]' \
             | grep -v '^[+-][+-][+-]' \
