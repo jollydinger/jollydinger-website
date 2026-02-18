@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JollyDinger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <header>
+    <nav class="nav-container">
+      <div class="logo">
+        <span class="logo-text">JOLLYDINGER</span>
+        <span class="logo-dot"></span>
+      </div>
+      <div class="nav-links">
+        <a href="https://x.com/JollyDinger" target="_blank" rel="noopener" class="nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @JollyDinger
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          <span class="gradient-text">PROJECTS</span>
+        </h1>
+        <p class="hero-subtitle">Building at the frontier of decentralized finance and AI</p>
+      </div>
+    </section>
+
+    <section class="tiles-section">
+      <div class="tiles-grid">
+
+        <!-- Tile 1: Post Fiat Validator -->
+        <div class="tile tile--validator">
+          <div class="tile-glow"></div>
+          <div class="tile-header">
+            <div class="tile-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="tile-badge tile-badge--active">
+              <span class="pulse-dot"></span>
+              ACTIVE
+            </div>
+          </div>
+          <h2 class="tile-title">Post Fiat Validator</h2>
+          <p class="tile-desc">Running a validator node on the Post Fiat testnet network, contributing to decentralized consensus and network security.</p>
+
+          <!-- Static info -->
+          <div class="validator-stats">
+            <div class="stat-row">
+              <span class="stat-label">Network</span>
+              <span class="stat-value">Post Fiat Testnet</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Type</span>
+              <span class="stat-value">XRPL Validator</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Public Key</span>
+              <span class="stat-value stat-value--mono stat-value--key" title="nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM">
+                nHBM2nzq3p...oRK4QWM
+              </span>
+            </div>
+          </div>
+
+          <!-- Live stats -->
+          <div class="live-section">
+            <div class="live-bar">
+              <div class="live-indicator" id="wsIndicator">
+                <span class="ws-dot" id="wsDot"></span>
+                <span class="ws-label" id="wsLabel">CONNECTING</span>
+              </div>
+              <span class="live-updated" id="lastUpdated"></span>
+            </div>
+            <div class="live-grid">
+              <div class="live-stat">
+                <span class="live-val" id="statUptime">—</span>
+                <span class="live-label">Uptime</span>
+              </div>
+              <div class="live-stat">
+                <span class="live-val" id="statAgreements">—</span>
+                <span class="live-label">Agreements</span>
+              </div>
+              <div class="live-stat">
+                <span class="live-val" id="statMissed">—</span>
+                <span class="live-label">Missed</span>
+              </div>
+              <div class="live-stat">
+                <span class="live-val" id="statLedger">—</span>
+                <span class="live-label">Ledger</span>
+              </div>
+            </div>
+            <div class="last-validated" id="lastValidated"></div>
+          </div>
+
+          <div class="full-key-container">
+            <span class="full-key-label">Full Validator Key</span>
+            <code class="full-key">nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM</code>
+            <button class="copy-btn" onclick="copyKey(this, 'nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+
+          <a href="https://explorer.testnet.postfiat.org/validators/nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM" target="_blank" rel="noopener" class="tile-cta">
+            View on Explorer
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <!-- Tile 2: Bull or Bear -->
+        <div class="tile tile--bullbear">
+          <div class="tile-glow tile-glow--alt"></div>
+          <div class="tile-header">
+            <div class="tile-icon tile-icon--alt">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <div class="tile-badge tile-badge--live">
+              <span class="pulse-dot pulse-dot--amber"></span>
+              LIVE
+            </div>
+          </div>
+          <h2 class="tile-title">Bull or Bear</h2>
+          <p class="tile-desc">A market sentiment tool to help traders cut through the noise and decide: is the market bullish or bearish?</p>
+
+          <div class="validator-stats">
+            <div class="stat-row">
+              <span class="stat-label">Type</span>
+              <span class="stat-value">Market Sentiment Tool</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Platform</span>
+              <span class="stat-value">Web App</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Status</span>
+              <span class="stat-value stat-value--amber">
+                <span class="pulse-dot pulse-dot--sm pulse-dot--amber"></span>
+                Live
+              </span>
+            </div>
+          </div>
+
+          <a href="https://bobbullorbear.vercel.app/" target="_blank" rel="noopener" class="tile-cta tile-cta--alt">
+            Launch App
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-divider"></div>
+      <div class="footer-content">
+        <p class="footer-label">Get in touch</p>
+        <div class="footer-links">
+          <a href="mailto:jollydingernft@gmail.com" class="footer-link footer-link--email">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+            jollydingernft@gmail.com
+          </a>
+          <a href="https://x.com/JollyDinger" target="_blank" rel="noopener" class="footer-link footer-link--x">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @JollyDinger
+          </a>
+        </div>
+        <p class="footer-copy">&copy; 2026 JollyDinger. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
