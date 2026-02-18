@@ -1,0 +1,89 @@
+name: Update Validator Stats
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes
+  workflow_dispatch:           # allow manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch validator data from PostFiat RPC
+        run: |
+          mkdir -p data
+
+          curl -sf --max-time 15 -X POST https://rpc.testnet.postfiat.org/ \
+            -H "Content-Type: application/json" \
+            -d '{"method":"validators","params":[{}]}' \
+            -o /tmp/validators.json
+
+          curl -sf --max-time 15 -X POST https://rpc.testnet.postfiat.org/ \
+            -H "Content-Type: application/json" \
+            -d '{"method":"server_info","params":[{}]}' \
+            -o /tmp/server_info.json
+
+          python3 << 'EOF'
+          import json, datetime, sys
+
+          VALIDATOR_KEY = 'nHBM2nzq3pZUg8JsxvEt3G7gAAtc5Sukaef6YmvVx64uAoRK4QWM'
+
+          try:
+              with open('/tmp/validators.json') as f:
+                  vdata = json.load(f)
+              with open('/tmp/server_info.json') as f:
+                  sdata = json.load(f)
+
+              validators = vdata.get('result', {}).get('validators', [])
+              v = next(
+                  (x for x in validators if x.get('validation_public_key') == VALIDATOR_KEY),
+                  None
+              )
+
+              agreement = v.get('agreement', {}) if v else {}
+              server_info = sdata.get('result', {}).get('info', {})
+
+              output = {
+                  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'validator_found': v is not None,
+                  'score':   str(agreement.get('score', '')),
+                  'total':   agreement.get('total', 0),
+                  'missed':  agreement.get('missed', 0),
+                  'network_state': server_info.get('server_state', 'unknown'),
+              }
+
+              with open('data/validator.json', 'w') as f:
+                  json.dump(output, f, indent=2)
+
+              print('OK:', json.dumps(output))
+
+          except Exception as e:
+              print('ERROR:', e, file=sys.stderr)
+              sys.exit(1)
+          EOF
+
+      - name: Commit if stats changed
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add data/validator.json
+
+          # Only commit when meaningful fields change (not just updated_at)
+          CHANGED=$(git diff --staged -- data/validator.json \
+            | grep '^[+-]' \
+            | grep -v '^[+-][+-][+-]' \
+            | grep -v '"updated_at"' \
+            || true)
+
+          if [ -n "$CHANGED" ]; then
+            git commit -m "chore: update validator stats [skip ci]"
+            git push
+          else
+            git checkout -- data/validator.json
+            echo "Stats unchanged, skipping commit."
+          fi
