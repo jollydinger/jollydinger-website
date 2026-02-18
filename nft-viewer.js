@@ -92,7 +92,7 @@ function resolveImageUrl(uri) {
 async function rpcPost(method, params) {
   const res = await fetch(RPC_URL, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body:    JSON.stringify({ method, params: [params] }),
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
