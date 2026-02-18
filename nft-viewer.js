@@ -1,7 +1,11 @@
 // ── State ─────────────────────────────────────────────────────────────────────
-let allNFTs      = [];
+let allNFTs       = [];
 let currentFilter = '';
 let currentSort   = 'seq-desc';
+let colorFilter   = new Set();
+let visibleCount  = 0;
+
+const PAGE_SIZE = 100;
 
 // ── Load data from pre-built JSON ─────────────────────────────────────────────
 async function loadAllNFTs() {
@@ -11,7 +15,7 @@ async function loadAllNFTs() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    allNFTs = data.nfts || [];
+    allNFTs = (data.nfts || []).filter(n => n.imageUrl);
     populateWalletFilter();
     renderNFTs();
     setStatus('live', `${allNFTs.length} NFTs · Updated ${formatAge(data.fetched_at)}`);
@@ -70,6 +74,10 @@ function getFilteredSorted() {
     ? allNFTs.filter(n => n.issuer === currentFilter)
     : allNFTs;
 
+  if (colorFilter.size > 0) {
+    nfts = nfts.filter(n => (n.colors || []).some(c => colorFilter.has(c)));
+  }
+
   switch (currentSort) {
     case 'seq-asc':  nfts = [...nfts].sort((a, b) => a.seq - b.seq); break;
     case 'seq-desc': nfts = [...nfts].sort((a, b) => b.seq - a.seq); break;
@@ -79,15 +87,13 @@ function getFilteredSorted() {
   return nfts;
 }
 
-// ── Render grid ───────────────────────────────────────────────────────────────
+// ── Render grid (full reset) ───────────────────────────────────────────────────
 function renderNFTs() {
-  const nfts  = getFilteredSorted();
-  const grid  = document.getElementById('nftGrid');
-  const count = document.getElementById('nftCount');
+  const nfts = getFilteredSorted();
+  const grid = document.getElementById('nftGrid');
 
-  count.textContent = currentFilter
-    ? `${nfts.length} of ${allNFTs.length} NFTs`
-    : `${nfts.length} NFTs`;
+  visibleCount = 0;
+  grid.innerHTML = '';
 
   if (nfts.length === 0) {
     grid.innerHTML = `
@@ -95,18 +101,47 @@ function renderNFTs() {
         <div class="nft-empty-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         </div>
-        <div>No NFTs found for this wallet</div>
-        <div class="nft-empty-sub">Try selecting a different wallet or clearing the filter</div>
+        <div>No NFTs found</div>
+        <div class="nft-empty-sub">Try a different filter</div>
       </div>`;
+    updateCount(0, 0);
+    document.getElementById('loadMoreWrap').style.display = 'none';
     return;
   }
 
-  const frag = document.createDocumentFragment();
-  for (const nft of nfts) frag.appendChild(createNFTCard(nft));
-  grid.innerHTML = '';
-  grid.appendChild(frag);
+  appendCards(nfts, Math.min(PAGE_SIZE, nfts.length));
 }
 
+// ── Append next batch of cards ─────────────────────────────────────────────────
+function appendCards(nfts, upTo) {
+  const grid = document.getElementById('nftGrid');
+  const frag = document.createDocumentFragment();
+  for (let i = visibleCount; i < upTo; i++) {
+    frag.appendChild(createNFTCard(nfts[i]));
+  }
+  visibleCount = upTo;
+  grid.appendChild(frag);
+
+  updateCount(visibleCount, nfts.length);
+
+  const loadMoreWrap = document.getElementById('loadMoreWrap');
+  if (visibleCount < nfts.length) {
+    loadMoreWrap.style.display = 'flex';
+    document.getElementById('loadMoreBtn').textContent =
+      `Load More (${nfts.length - visibleCount} remaining)`;
+  } else {
+    loadMoreWrap.style.display = 'none';
+  }
+}
+
+function updateCount(shown, total) {
+  const count = document.getElementById('nftCount');
+  count.textContent = shown < total
+    ? `Showing ${shown} of ${total} NFTs`
+    : `${total} NFTs`;
+}
+
+// ── Card factory ──────────────────────────────────────────────────────────────
 function createNFTCard(nft) {
   const shortId   = nft.id.slice(0, 8) + '…' + nft.id.slice(-6);
   const shortAddr = nft.issuer.slice(0, 6) + '…' + nft.issuer.slice(-4);
@@ -123,16 +158,15 @@ function createNFTCard(nft) {
   ph.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
   imgWrap.appendChild(ph);
 
-  if (nft.imageUrl) {
-    const img = document.createElement('img');
-    img.src       = nft.imageUrl;
-    img.alt       = 'NFT';
-    img.loading   = 'lazy';
-    img.className = 'nft-img';
-    img.addEventListener('load',  () => { img.classList.add('nft-img--loaded'); ph.style.display = 'none'; });
-    img.addEventListener('error', () => { img.style.display = 'none'; });
-    imgWrap.appendChild(img);
-  }
+  const img = document.createElement('img');
+  img.src       = nft.imageUrl;
+  img.alt       = nft.name || 'NFT';
+  img.loading   = 'lazy';
+  img.className = 'nft-img';
+  img.addEventListener('load',  () => { img.classList.add('nft-img--loaded'); ph.style.display = 'none'; });
+  img.addEventListener('error', () => { img.style.display = 'none'; });
+  imgWrap.appendChild(img);
+
   card.appendChild(imgWrap);
 
   // Metadata
@@ -142,7 +176,7 @@ function createNFTCard(nft) {
   // Name or ID row
   const idRow = document.createElement('div');
   idRow.className = 'nft-meta-row';
-  const displayName = nft.name ? nft.name : shortId;
+  const displayName  = nft.name ? nft.name : shortId;
   const displayTitle = nft.name ? `${nft.name}\n${nft.id}` : nft.id;
   idRow.innerHTML = `<span class="nft-meta-label">${nft.name ? 'Name' : 'ID'}</span><span class="nft-meta-value nft-meta-mono" title="${displayTitle}">${displayName}</span>`;
   meta.appendChild(idRow);
@@ -173,6 +207,18 @@ function filterByWallet(addr) {
   renderNFTs();
 }
 
+// ── Color chip toggle ─────────────────────────────────────────────────────────
+function toggleColor(color, btn) {
+  if (colorFilter.has(color)) {
+    colorFilter.delete(color);
+    btn.classList.remove('active');
+  } else {
+    colorFilter.add(color);
+    btn.classList.add('active');
+  }
+  renderNFTs();
+}
+
 // ── Event wiring ──────────────────────────────────────────────────────────────
 document.getElementById('walletFilter').addEventListener('change', e => {
   currentFilter = e.target.value;
@@ -186,8 +232,16 @@ document.getElementById('sortBy').addEventListener('change', e => {
 
 document.getElementById('clearFilter').addEventListener('click', () => {
   currentFilter = '';
+  colorFilter.clear();
   document.getElementById('walletFilter').value = '';
+  document.querySelectorAll('.color-chip').forEach(btn => btn.classList.remove('active'));
   renderNFTs();
+});
+
+document.getElementById('loadMoreBtn').addEventListener('click', () => {
+  const nfts = getFilteredSorted();
+  const upTo = Math.min(visibleCount + PAGE_SIZE, nfts.length);
+  appendCards(nfts, upTo);
 });
 
 // ── Mouse parallax ────────────────────────────────────────────────────────────

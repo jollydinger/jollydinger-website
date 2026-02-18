@@ -70,6 +70,16 @@
             <option value="id">By NFT ID</option>
           </select>
         </div>
+        <div class="nft-control-group">
+          <label class="nft-control-label">Color</label>
+          <div class="nft-color-chips">
+            <button class="color-chip color-chip--red"   onclick="toggleColor('red',   this)">Red</button>
+            <button class="color-chip color-chip--blue"  onclick="toggleColor('blue',  this)">Blue</button>
+            <button class="color-chip color-chip--green" onclick="toggleColor('green', this)">Green</button>
+            <button class="color-chip color-chip--white" onclick="toggleColor('white', this)">White</button>
+            <button class="color-chip color-chip--black" onclick="toggleColor('black', this)">Black</button>
+          </div>
+        </div>
         <button class="nft-clear-btn" id="clearFilter">Clear Filter</button>
         <div class="nft-count" id="nftCount"></div>
       </div>
@@ -78,8 +88,13 @@
       <div id="nftGrid" class="nft-grid">
         <div class="nft-loading">
           <div class="nft-spinner"></div>
-          <span>Fetching NFTs from Post Fiat Testnet…</span>
+          <span>Loading NFT data…</span>
         </div>
+      </div>
+
+      <!-- Load More -->
+      <div class="nft-load-more-wrap" id="loadMoreWrap" style="display:none;">
+        <button class="nft-load-more-btn" id="loadMoreBtn">Load More</button>
       </div>
 
     </section>

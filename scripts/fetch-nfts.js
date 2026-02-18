@@ -204,13 +204,13 @@ async function main() {
     };
   });
 
-  const withImages = allNFTs.filter(n => n.imageUrl).length;
-  console.log(`Done! ${allNFTs.length} NFTs total, ${withImages} with resolved images.`);
+  const withImages = allNFTs.filter(n => n.imageUrl);
+  console.log(`Done! ${allNFTs.length} NFTs total, ${withImages.length} with resolved images.`);
 
   const output = {
     fetched_at: new Date().toISOString(),
-    count:      allNFTs.length,
-    nfts:       allNFTs,
+    count:      withImages.length,
+    nfts:       withImages,
   };
 
   const outPath = path.join(__dirname, '..', 'nft-data.json');

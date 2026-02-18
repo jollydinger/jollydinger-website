@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/fetch-nfts.js'
+      - 'scripts/tag-colors.js'
 
 jobs:
   fetch-nfts:
@@ -24,10 +25,15 @@ jobs:
       - name: Fetch NFT data from Post Fiat Testnet
         run: node scripts/fetch-nfts.js
 
+      - name: Tag NFT colors via OpenRouter
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: node scripts/tag-colors.js
+
       - name: Commit and push if data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add nft-data.json
+          git add nft-data.json nft-colors.json
           git diff --staged --quiet || git commit -m "Update NFT data [skip ci]"
           git push
