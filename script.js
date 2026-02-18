@@ -8,8 +8,8 @@ const elDot        = document.getElementById('wsDot');
 const elLabel      = document.getElementById('wsLabel');
 const elUpdated    = document.getElementById('lastUpdated');
 const elUptime     = document.getElementById('statUptime');
-const elAgreements = document.getElementById('statAgreements');
-const elMissed     = document.getElementById('statMissed');
+const elScore24h   = document.getElementById('statScore24h');
+const elScore30d   = document.getElementById('statScore30d');
 const elLedger     = document.getElementById('statLedger');
 const elLastVal    = document.getElementById('lastValidated');
 
@@ -29,16 +29,21 @@ async function fetchStats() {
 function render(data) {
   setStatus('live');
 
-  const a1h   = data.agreement_1h  || {};
-  const score = parseFloat(a1h.score || 0);
+  const a1h    = data.agreement_1h   || {};
+  const a24h   = data.agreement_24h  || {};
+  const a30d   = data.agreement_30day || {};
+  const score  = parseFloat(a1h.score  || 0);
+  const s24h   = parseFloat(a24h.score || 0);
+  const s30d   = parseFloat(a30d.score || 0);
 
-  elUptime.textContent     = (score * 100).toFixed(2) + '%';
-  elAgreements.textContent = formatNum((a1h.total || 0) - (a1h.missed || 0));
-  elMissed.textContent     = formatNum(a1h.missed || 0);
-  elLedger.textContent     = data.current_index ? formatNum(data.current_index) : '—';
+  elUptime.textContent   = (score * 100).toFixed(2) + '%';
+  elScore24h.textContent = a24h.score ? (s24h * 100).toFixed(2) + '%' : '—';
+  elScore30d.textContent = a30d.score ? (s30d * 100).toFixed(2) + '%' : '—';
+  elLedger.textContent   = data.current_index ? formatNum(data.current_index) : '—';
 
-  elUptime.className = 'live-val ' +
-    (score >= 0.95 ? 'live-val--green' : score < 0.80 ? 'live-val--red' : '');
+  elUptime.className   = 'live-val ' + scoreClass(score);
+  elScore24h.className = 'live-val ' + scoreClass(s24h);
+  elScore30d.className = 'live-val ' + scoreClass(s30d);
 
   // ── "Updated X min ago" ticker ──
   const fetchedAt = Date.now();
@@ -50,9 +55,7 @@ function render(data) {
   }, 60000);
 
   // ── Footer info row ──
-  const a24h = data.agreement_24h || {};
-  const score24 = a24h.score ? (parseFloat(a24h.score) * 100).toFixed(2) + '%' : '—';
-  elLastVal.textContent = `⬡ Chain: ${data.chain || 'test'}  ·  24h score: ${score24}  ·  v${data.server_version || '—'}`;
+  elLastVal.textContent = `⬡ Chain: ${data.chain || 'test'}  ·  v${data.server_version || '—'}`;
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -74,6 +77,10 @@ function setStatus(state) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatNum(n) {
   return Number(n).toLocaleString();
+}
+
+function scoreClass(score) {
+  return score >= 0.95 ? 'live-val--green' : score < 0.80 ? 'live-val--red' : '';
 }
 
 // ── Copy key ──────────────────────────────────────────────────────────────────
