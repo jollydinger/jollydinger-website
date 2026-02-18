@@ -56,7 +56,7 @@ async function tagColor(imageUrl) {
         role:    'user',
         content: [
           { type: 'image_url', image_url: { url: imageUrl } },
-          { type: 'text', text: 'Look at this NFT image. Which of these colors are prominently featured? Choose all that apply from: red, blue, green, white, black. Respond with only the matching color names separated by commas, or "none" if none apply clearly.' },
+          { type: 'text', text: 'Look at this NFT image and identify its colors using these rules:\n- Tag "red" if there is any noticeable red anywhere in the image, even a small amount.\n- Tag "blue", "green", or "white" only if that color covers more than 30% of the image.\n- Tag "black" only if black covers more than 60% of the image — do NOT tag black just because the background is dark.\n- Assign 1 or 2 color tags maximum. Choose only from: red, blue, green, white, black.\n- Respond with only the matching color names separated by commas, or "none" if none apply.' },
         ],
       }],
     });
