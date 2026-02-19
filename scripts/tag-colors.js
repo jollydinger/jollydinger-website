@@ -8,7 +8,7 @@ const fs    = require('fs');
 const path  = require('path');
 
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL          = 'anthropic/claude-3-5-haiku-20241022';
+const MODEL          = 'google/gemini-2.0-flash-001';
 const BATCH_SIZE     = 5;
 const VALID_COLORS   = new Set(['red', 'blue', 'green', 'white', 'black']);
 
@@ -61,9 +61,12 @@ async function tagColor(imageUrl) {
       }],
     });
     const raw  = result.choices?.[0]?.message?.content;
-    const text = (raw || '').toLowerCase().trim() || 'none';
-    if (!raw) console.warn('\n  No content in response:', JSON.stringify(result).slice(0, 200));
-    else      process.stdout.write(` [${text}]`);
+    if (!raw) {
+      console.warn('\n  No content in response:', JSON.stringify(result).slice(0, 200));
+      return null; // treat API errors as failures so they get retried next run
+    }
+    const text = raw.toLowerCase().trim();
+    process.stdout.write(` [${text}]`);
     if (text === 'none') return [];
     return text.split(',').map(s => s.trim()).filter(c => VALID_COLORS.has(c));
   } catch (err) {
