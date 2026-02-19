@@ -1225,11 +1225,18 @@ footer {
 
   .nft-viewer-hero {
     gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .nft-hero-text {
+    text-align: center;
   }
 
   .nft-status-badge {
-    order: -1;
-    align-self: flex-start;
+    order: 0;
+    align-self: center;
   }
 
   .nft-controls {

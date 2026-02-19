@@ -1,7 +1,7 @@
 // ── State ─────────────────────────────────────────────────────────────────────
 let allNFTs       = [];
 let currentFilter = '';
-let currentSort   = 'seq-desc';
+let currentSort   = 'age-desc';
 let colorFilter   = new Set();
 let visibleCount  = 0;
 
@@ -79,8 +79,8 @@ function getFilteredSorted() {
   }
 
   switch (currentSort) {
-    case 'seq-asc':  nfts = [...nfts].sort((a, b) => a.seq - b.seq); break;
-    case 'seq-desc': nfts = [...nfts].sort((a, b) => b.seq - a.seq); break;
+    case 'age-asc':  nfts = [...nfts].sort((a, b) => a.seq - b.seq); break;
+    case 'age-desc': nfts = [...nfts].sort((a, b) => b.seq - a.seq); break;
     case 'wallet':   nfts = [...nfts].sort((a, b) => a.issuer.localeCompare(b.issuer) || a.seq - b.seq); break;
     case 'id':       nfts = [...nfts].sort((a, b) => a.id.localeCompare(b.id)); break;
   }
@@ -207,12 +207,14 @@ function filterByWallet(addr) {
   renderNFTs();
 }
 
-// ── Color chip toggle ─────────────────────────────────────────────────────────
+// ── Color chip toggle (single-select) ────────────────────────────────────────
 function toggleColor(color, btn) {
   if (colorFilter.has(color)) {
-    colorFilter.delete(color);
+    colorFilter.clear();
     btn.classList.remove('active');
   } else {
+    colorFilter.clear();
+    document.querySelectorAll('.color-chip').forEach(b => b.classList.remove('active'));
     colorFilter.add(color);
     btn.classList.add('active');
   }
