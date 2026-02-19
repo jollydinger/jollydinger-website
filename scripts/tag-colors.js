@@ -8,7 +8,7 @@ const fs    = require('fs');
 const path  = require('path');
 
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL          = 'anthropic/claude-3-5-haiku';
+const MODEL          = 'anthropic/claude-3-5-haiku-20241022';
 const BATCH_SIZE     = 5;
 const VALID_COLORS   = new Set(['red', 'blue', 'green', 'white', 'black']);
 
