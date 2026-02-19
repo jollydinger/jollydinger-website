@@ -68,6 +68,20 @@ function populateWalletFilter() {
   }
 }
 
+// ── Age sort key ──────────────────────────────────────────────────────────────
+// Returns a string that sorts correctly lexicographically for age ordering.
+// Dated NFTs (name contains YYYY-MM-DD) sort by date then seq.
+// Undated NFTs (#N style) are treated as oldest, sorted by their number.
+function getAgeSortKey(nft) {
+  const dateMatch = nft.name && nft.name.match(/(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) {
+    return dateMatch[1] + '_' + String(nft.seq).padStart(10, '0');
+  }
+  const numMatch = nft.name && nft.name.match(/#(\d+)/);
+  const num = numMatch ? parseInt(numMatch[1]) : 0;
+  return '0000-00-00_' + String(num).padStart(10, '0');
+}
+
 // ── Filter & sort ─────────────────────────────────────────────────────────────
 function getFilteredSorted() {
   let nfts = currentFilter
@@ -79,8 +93,8 @@ function getFilteredSorted() {
   }
 
   switch (currentSort) {
-    case 'age-asc':  nfts = [...nfts].sort((a, b) => a.seq - b.seq); break;
-    case 'age-desc': nfts = [...nfts].sort((a, b) => b.seq - a.seq); break;
+    case 'age-asc':  nfts = [...nfts].sort((a, b) => getAgeSortKey(a).localeCompare(getAgeSortKey(b))); break;
+    case 'age-desc': nfts = [...nfts].sort((a, b) => getAgeSortKey(b).localeCompare(getAgeSortKey(a))); break;
     case 'wallet':   nfts = [...nfts].sort((a, b) => a.issuer.localeCompare(b.issuer) || a.seq - b.seq); break;
     case 'id':       nfts = [...nfts].sort((a, b) => a.id.localeCompare(b.id)); break;
   }
