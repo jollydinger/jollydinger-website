@@ -60,7 +60,10 @@ async function tagColor(imageUrl) {
         ],
       }],
     });
-    const text = result.choices?.[0]?.message?.content?.toLowerCase().trim() || 'none';
+    const raw  = result.choices?.[0]?.message?.content;
+    const text = (raw || '').toLowerCase().trim() || 'none';
+    if (!raw) console.warn('\n  No content in response:', JSON.stringify(result).slice(0, 200));
+    else      process.stdout.write(` [${text}]`);
     if (text === 'none') return [];
     return text.split(',').map(s => s.trim()).filter(c => VALID_COLORS.has(c));
   } catch (err) {
