@@ -54,6 +54,8 @@ function isValidCID(cid) {
 
 function ipfsToGateway(uri) {
   if (!uri) return null;
+  // Strip non-standard "uri:" prefix before the actual scheme
+  if (uri.startsWith('uri:')) uri = uri.slice(4);
   if (uri.startsWith('ipfs://')) {
     const cid = uri.slice(7).trim();
     return isValidCID(cid) ? PFT_GW + cid : null;
