@@ -8,10 +8,11 @@ const fs     = require('fs');
 const path   = require('path');
 const crypto = require('crypto');
 
-const RPC_URL     = 'https://rpc.testnet.postfiat.org/';
-const PFT_GW      = 'https://pft-ipfs-testnet-node-1.fly.dev/ipfs/';
-const FETCH_LIMIT = 400;
-const META_BATCH  = 20;   // parallel metadata fetches
+const RPC_URL      = 'https://rpc.testnet.postfiat.org/';
+const PFT_GW       = 'https://pft-ipfs-testnet-node-1.fly.dev/ipfs/';
+const FALLBACK_GW  = 'https://ipfs.io/ipfs/';
+const FETCH_LIMIT  = 400;
+const META_BATCH   = 20;   // parallel metadata fetches
 const META_TIMEOUT = 12000; // ms per metadata fetch
 
 // ── XRPL Base58Check ──────────────────────────────────────────────────────────
@@ -109,25 +110,34 @@ function rpcPost(method, params) {
 }
 
 // ── Metadata resolution ───────────────────────────────────────────────────────
-// Returns { imageUrl, name, description } or nulls if unresolvable
+// Returns { imageUrl, name, description, collection } or nulls if unresolvable.
+// Tries the PFT gateway first; falls back to ipfs.io if PFT fails or times out
+// (some collections are pinned on external nodes the PFT gateway can't reach).
 async function resolveMetadata(metaUrl) {
-  try {
-    const res = await httpGet(metaUrl);
-    const ct  = res.contentType.toLowerCase();
+  // Build list of URLs to try: PFT gateway first, then public fallback
+  const cid  = metaUrl.startsWith(PFT_GW) ? metaUrl.slice(PFT_GW.length) : null;
+  const urls = cid ? [metaUrl, FALLBACK_GW + cid] : [metaUrl];
 
-    if (ct.includes('image/')) {
-      // URI points directly to an image
-      return { imageUrl: metaUrl, name: null, description: null, collection: null };
-    }
+  for (const url of urls) {
+    try {
+      const res = await httpGet(url);
+      if (res.status !== 200) continue;
+      const ct = res.contentType.toLowerCase();
 
-    if (ct.includes('json') || ct.includes('text/plain')) {
-      let json;
-      try { json = JSON.parse(res.body); } catch { return { imageUrl: null, name: null, description: null, collection: null }; }
-      const imageUrl = ipfsToGateway(json.image || '');
-      return { imageUrl, name: json.name || null, description: json.description || null, collection: json.collection || null };
+      if (ct.includes('image/')) {
+        // URI points directly to an image — store whichever gateway URL worked
+        return { imageUrl: url, name: null, description: null, collection: null };
+      }
+
+      if (ct.includes('json') || ct.includes('text/plain')) {
+        let json;
+        try { json = JSON.parse(res.body); } catch { continue; }
+        const imageUrl = ipfsToGateway(json.image || '');
+        return { imageUrl, name: json.name || null, description: json.description || null, collection: json.collection || null };
+      }
+    } catch {
+      // timeout or network error — try next gateway
     }
-  } catch {
-    // timeout, network error, etc.
   }
   return { imageUrl: null, name: null, description: null, collection: null };
 }
