@@ -1,11 +1,22 @@
 // ── State ─────────────────────────────────────────────────────────────────────
-let allNFTs       = [];
-let currentFilter = '';
-let currentSort   = 'age-desc';
-let colorFilter   = new Set();
-let visibleCount  = 0;
+let allNFTs          = [];
+let currentFilter    = '';   // wallet filter
+let collectionFilter = '';   // collection filter
+let currentSort      = 'age-desc';
+let colorFilter      = new Set();
+let visibleCount     = 0;
 
 const PAGE_SIZE = 100;
+
+// ── Collection helper ─────────────────────────────────────────────────────────
+// Derives a human-readable collection name from an NFT object.
+// Priority: explicit metadata field → name-pattern match → issuer prefix
+function getCollection(nft) {
+  if (nft.collection) return nft.collection;
+  if (nft.name && nft.name.startsWith('PFT Profile')) return 'PFT Profiles';
+  // Fallback: group unknowns by issuer so they at least cluster together
+  return nft.issuer.slice(0, 8) + '…';
+}
 
 // ── Load data from pre-built JSON ─────────────────────────────────────────────
 async function loadAllNFTs() {
@@ -17,6 +28,7 @@ async function loadAllNFTs() {
 
     allNFTs = (data.nfts || []).filter(n => n.imageUrl);
     populateWalletFilter();
+    populateCollectionFilter();
     renderNFTs();
     setStatus('live', `${allNFTs.length} NFTs · Updated ${formatAge(data.fetched_at)}`);
   } catch (err) {
@@ -68,10 +80,33 @@ function populateWalletFilter() {
   }
 }
 
+// ── Collection filter dropdown ────────────────────────────────────────────────
+function populateCollectionFilter() {
+  const select = document.getElementById('collectionFilter');
+  const counts  = {};
+  allNFTs.forEach(n => {
+    const col = getCollection(n);
+    counts[col] = (counts[col] || 0) + 1;
+  });
+
+  const collections = Object.keys(counts).sort();
+
+  // Hide the whole control group if there's only one collection
+  const group = document.getElementById('collectionFilterGroup');
+  if (collections.length <= 1) {
+    group.style.display = 'none';
+    return;
+  }
+
+  for (const col of collections) {
+    const opt = document.createElement('option');
+    opt.value       = col;
+    opt.textContent = `${col} (${counts[col]})`;
+    select.appendChild(opt);
+  }
+}
+
 // ── Age sort key ──────────────────────────────────────────────────────────────
-// Returns a string that sorts correctly lexicographically for age ordering.
-// Dated NFTs (name contains YYYY-MM-DD) sort by date then seq.
-// Undated NFTs (#N style) are treated as oldest, sorted by their number.
 function getAgeSortKey(nft) {
   const dateMatch = nft.name && nft.name.match(/(\d{4}-\d{2}-\d{2})/);
   if (dateMatch) {
@@ -87,6 +122,10 @@ function getFilteredSorted() {
   let nfts = currentFilter
     ? allNFTs.filter(n => n.issuer === currentFilter)
     : allNFTs;
+
+  if (collectionFilter) {
+    nfts = nfts.filter(n => getCollection(n) === collectionFilter);
+  }
 
   if (colorFilter.size > 0) {
     nfts = nfts.filter(n => (n.colors || []).some(c => colorFilter.has(c)));
@@ -162,6 +201,12 @@ function createNFTCard(nft) {
 
   const card = document.createElement('div');
   card.className = 'nft-card';
+
+  // Navigate to detail page on click (but not when clicking the issuer button)
+  card.addEventListener('click', e => {
+    if (e.target.closest('.nft-issuer-btn')) return;
+    window.location.href = 'nft-detail.html?id=' + encodeURIComponent(nft.id);
+  });
 
   // Image wrapper
   const imgWrap = document.createElement('div');
@@ -241,15 +286,22 @@ document.getElementById('walletFilter').addEventListener('change', e => {
   renderNFTs();
 });
 
+document.getElementById('collectionFilter').addEventListener('change', e => {
+  collectionFilter = e.target.value;
+  renderNFTs();
+});
+
 document.getElementById('sortBy').addEventListener('change', e => {
   currentSort = e.target.value;
   renderNFTs();
 });
 
 document.getElementById('clearFilter').addEventListener('click', () => {
-  currentFilter = '';
+  currentFilter    = '';
+  collectionFilter = '';
   colorFilter.clear();
-  document.getElementById('walletFilter').value = '';
+  document.getElementById('walletFilter').value    = '';
+  document.getElementById('collectionFilter').value = '';
   document.querySelectorAll('.color-chip').forEach(btn => btn.classList.remove('active'));
   renderNFTs();
 });

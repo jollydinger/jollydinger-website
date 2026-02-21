@@ -115,19 +115,19 @@ async function resolveMetadata(metaUrl) {
 
     if (ct.includes('image/')) {
       // URI points directly to an image
-      return { imageUrl: metaUrl, name: null, description: null };
+      return { imageUrl: metaUrl, name: null, description: null, collection: null };
     }
 
     if (ct.includes('json') || ct.includes('text/plain')) {
       let json;
-      try { json = JSON.parse(res.body); } catch { return { imageUrl: null, name: null, description: null }; }
+      try { json = JSON.parse(res.body); } catch { return { imageUrl: null, name: null, description: null, collection: null }; }
       const imageUrl = ipfsToGateway(json.image || '');
-      return { imageUrl, name: json.name || null, description: json.description || null };
+      return { imageUrl, name: json.name || null, description: json.description || null, collection: json.collection || null };
     }
   } catch {
     // timeout, network error, etc.
   }
-  return { imageUrl: null, name: null, description: null };
+  return { imageUrl: null, name: null, description: null, collection: null };
 }
 
 // Run promises in batches to avoid hammering the gateway
@@ -192,7 +192,7 @@ async function main() {
   // Step 3: Build final output
   const allNFTs = rawNFTs.map(nft => {
     const idx  = resolvable.indexOf(nft);
-    const meta = idx >= 0 ? metaResults[idx] : { imageUrl: null, name: null, description: null };
+    const meta = idx >= 0 ? metaResults[idx] : { imageUrl: null, name: null, description: null, collection: null };
     return {
       id:          nft.id,
       issuer:      nft.issuer,
@@ -201,6 +201,7 @@ async function main() {
       imageUrl:    meta.imageUrl,
       name:        meta.name,
       description: meta.description,
+      collection:  meta.collection,
     };
   });
 

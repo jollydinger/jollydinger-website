@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PFT NFT Viewer — JollyDinger</title>
+  <title>NFT Detail — JollyDinger</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -23,9 +23,9 @@
         </a>
       </div>
       <div class="nav-links">
-        <a href="index.html" class="nav-link">
+        <a href="pftnftviewer.html" class="nav-link">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Home
+          NFT Viewer
         </a>
         <a href="https://x.com/JollyDinger" target="_blank" rel="noopener" class="nav-link">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -36,73 +36,13 @@
   </header>
 
   <main>
-    <section class="nft-viewer-section">
-
-      <!-- Page hero -->
-      <div class="nft-viewer-hero">
-        <div class="nft-page-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <div class="nft-hero-text">
-          <h1 class="nft-page-title">PFT Testnet NFT Viewer</h1>
-          <p class="nft-page-desc">Browse all NFTs minted on the Post Fiat Testnet</p>
-        </div>
-        <div class="nft-status-badge">
-          <span class="ws-dot ws-dot--connecting" id="nftDot"></span>
-          <span id="nftStatusLabel">LOADING</span>
-        </div>
-      </div>
-
-      <!-- Controls bar -->
-      <div class="nft-controls">
-        <div class="nft-control-group" id="collectionFilterGroup">
-          <label class="nft-control-label" for="collectionFilter">Collection</label>
-          <select id="collectionFilter" class="nft-select">
-            <option value="">All Collections</option>
-          </select>
-        </div>
-        <div class="nft-control-group">
-          <label class="nft-control-label" for="walletFilter">Wallet</label>
-          <select id="walletFilter" class="nft-select">
-            <option value="">All Wallets</option>
-          </select>
-        </div>
-        <div class="nft-control-group">
-          <label class="nft-control-label" for="sortBy">Sort</label>
-          <select id="sortBy" class="nft-select">
-            <option value="age-desc">Age: New → Old</option>
-            <option value="age-asc">Age: Old → New</option>
-            <option value="wallet">By Wallet</option>
-            <option value="id">By NFT ID</option>
-          </select>
-        </div>
-        <div class="nft-control-group">
-          <label class="nft-control-label">Color</label>
-          <div class="nft-color-chips">
-            <button class="color-chip color-chip--red"   onclick="toggleColor('red',   this)">Red</button>
-            <button class="color-chip color-chip--blue"  onclick="toggleColor('blue',  this)">Blue</button>
-            <button class="color-chip color-chip--green" onclick="toggleColor('green', this)">Green</button>
-            <button class="color-chip color-chip--white" onclick="toggleColor('white', this)">White</button>
-            <button class="color-chip color-chip--black" onclick="toggleColor('black', this)">Black</button>
-          </div>
-        </div>
-        <button class="nft-clear-btn" id="clearFilter">Clear Filter</button>
-        <div class="nft-count" id="nftCount"></div>
-      </div>
-
-      <!-- NFT Grid -->
-      <div id="nftGrid" class="nft-grid">
+    <section class="nft-detail-section">
+      <div id="nftDetailContent">
         <div class="nft-loading">
           <div class="nft-spinner"></div>
-          <span>Loading NFT data…</span>
+          <span>Loading NFT…</span>
         </div>
       </div>
-
-      <!-- Load More -->
-      <div class="nft-load-more-wrap" id="loadMoreWrap" style="display:none;">
-        <button class="nft-load-more-btn" id="loadMoreBtn">Load More</button>
-      </div>
-
     </section>
   </main>
 
@@ -140,6 +80,6 @@
     </div>
   </footer>
 
-  <script src="nft-viewer.js"></script>
+  <script src="nft-detail.js"></script>
 </body>
 </html>
