@@ -85,7 +85,7 @@ async function main() {
     ? JSON.parse(fs.readFileSync(colorPath, 'utf8'))
     : {};
 
-  const untagged = nftData.nfts.filter(n => n.imageUrl && !(n.id in colorCache));
+  const untagged = nftData.nfts.filter(n => n.imageUrl && !(n.id in colorCache) && n.name && n.name.startsWith('PFT Profile'));
   console.log(`Color cache: ${Object.keys(colorCache).length} entries cached. ${untagged.length} NFTs to tag.`);
 
   let tagged = 0;
